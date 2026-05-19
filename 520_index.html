@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>520专属礼物</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(180deg, #FFE4EC 0%, #FFB6C1 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* 首页容器 */
+        .page {
+            display: none;
+            width: 100%;
+            min-height: 100vh;
+            position: relative;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .page.active {
+            display: block;
+            opacity: 1;
+        }
+        
+        /* 加载动画 */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 228, 236, 0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #FFB6C1;
+            border-top-color: #FF69B4;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 首页样式 */
+        #home-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .gift-box {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 40px rgba(255, 182, 193, 0.4);
+            max-width: 320px;
+            width: 100%;
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #FFE4EC;
+            border: none;
+            font-size: 18px;
+            color: #FF69B4;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .close-btn:hover {
+            background: #FFB6C1;
+        }
+        
+        .gift-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .arrow-down {
+            font-size: 30px;
+            color: #FF69B4;
+            margin-bottom: 20px;
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(10px); }
+        }
+        
+        .input-box {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #FFB6C1;
+            border-radius: 30px;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .input-box:focus {
+            border-color: #FF69B4;
+        }
+        
+        .input-box::placeholder {
+            color: #FFB6C1;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 15px 20px;
+            background: linear-gradient(90deg, #6EC6FF 0%, #42A5F5 100%);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .submit-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Toast 弹窗样式 */
+        .toast-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .toast-overlay.active {
+            display: flex;
+        }
+        
+        .toast-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            max-width: 280px;
+            width: 90%;
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .toast-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .toast-message {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+            background: #FFE4EC;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .banana-img {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            display: block;
+            border-radius: 10px;
+        }
+        
+        .toast-btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: linear-gradient(90deg, #6EC6FF 0%, #42A5F5 100%);
+            border: none;
+            border-radius: 30px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* 错误提示样式 */
+        .error-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px 25px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 200;
+            animation: shake 0.3s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translate(-50%, -50%); }
+            25% { transform: translate(-48%, -50%); }
+            75% { transform: translate(-52%, -50%); }
+        }
+        
+        .error-toast.active {
+            display: flex;
+        }
+        
+        .error-icon {
+            width: 40px;
+            height: 40px;
+            background: #FFE4EC;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: #FF6B6B;
+            font-weight: bold;
+        }
+        
+        .error-text {
+            font-size: 15px;
+            color: #FF6B6B;
+            font-weight: 500;
+        }
+        
+        /* 礼物列表页 */
+        #gift-page {
+            padding-bottom: 60px;
+        }
+        
+        .gift-header {
+            background: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #FFE4EC;
+            border: none;
+            font-size: 20px;
+            color: #FF69B4;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .cart-btn {
+            margin-left: auto;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #FFE4EC;
+            border: none;
+            font-size: 18px;
+            color: #FF69B4;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .gift-subtitle {
+            padding: 10px 20px;
+            color: #999;
+            font-size: 14px;
+        }
+        
+        .gift-list {
+            padding: 0 15px;
+        }
+        
+        .gift-item {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .gift-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .gift-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .gift-name {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .gift-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .tag {
+            font-size: 12px;
+            padding: 3px 8px;
+            background: #FFE4EC;
+            color: #FF69B4;
+            border-radius: 15px;
+        }
+        
+        .tag.price {
+            background: linear-gradient(90deg, #FFB6C1 0%, #FF69B4 100%);
+            color: white;
+        }
+        
+        .gift-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .friend-count {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .select-btn {
+            padding: 8px 15px;
+            background: linear-gradient(90deg, #FFB6C1 0%, #FF69B4 100%);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .select-btn.selected {
+            background: #999;
+        }
+        
+        /* 购物车底部栏 */
+        .cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            z-index: 100;
+        }
+        
+        .cart-icon {
+            font-size: 24px;
+            position: relative;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -10px;
+            background: #FF69B4;
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+        
+        .cart-text {
+            flex: 1;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .cart-submit-btn {
+            padding: 10px 25px;
+            background: linear-gradient(90deg, #FFB6C1 0%, #FF69B4 100%);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* 地址填写页 */
+        #address-page {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        
+        .address-content {
+            flex: 1;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .address-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+        .address-input {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            border: 2px solid #FFE4EC;
+            border-radius: 15px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .address-input:focus {
+            border-color: #FFB6C1;
+        }
+        
+        .address-hint {
+            font-size: 14px;
+            color: #999;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        .address-note {
+            font-size: 14px;
+            color: #FF69B4;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .address-img {
+            display: block;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 25px;
+            border-radius: 15px;
+            object-fit: cover;
+        }
+        
+        .address-submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: white;
+            border: 2px solid #FFB6C1;
+            border-radius: 30px;
+            color: #FF69B4;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* 小猫页面 */
+        #cat-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+        
+        .cat-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .cat-subtitle {
+            font-size: 15px;
+            color: #666;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .cat-img {
+            width: 100%;
+            max-width: 300px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .cat-bottom-text {
+            font-size: 14px;
+            color: #999;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .cat-pay-btn {
+            padding: 12px 30px;
+            background: linear-gradient(90deg, #FFB6C1 0%, #FF69B4 100%);
+            border: none;
+            border-radius: 25px;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* 二维码容器 */
+        .qrcode-container {
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .qrcode-title {
+            font-size: 15px;
+            font-weight: bold;
+            color: #FF69B4;
+            margin-bottom: 15px;
+        }
+        
+        .qrcode-box {
+            width: 150px;
+            height: 150px;
+            background: white;
+            border: 2px solid #FFE4EC;
+            border-radius: 15px;
+            padding: 10px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qrcode-pattern {
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, #333 25%, transparent 25%),
+                linear-gradient(-45deg, #333 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #333 75%),
+                linear-gradient(-45deg, transparent 75%, #333 75%);
+            background-size: 10px 10px;
+            background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+        }
+        
+        .qrcode-hint {
+            font-size: 13px;
+            color: #999;
+        }
+        
+        /* 诈骗提示页面 */
+        #scam-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+        
+        .scam-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .scam-img {
+            width: 250px;
+            height: 250px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            object-fit: cover;
+        }
+        
+        .scam-text {
+            font-size: 16px;
+            color: #FF4444;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- 首页 -->
+    <div id="home-page" class="page active">
+        <div class="gift-box">
+            <button class="close-btn" id="close-btn">×</button>
+            <div class="gift-title">520专属礼物</div>
+            <div class="arrow-down">↓</div>
+            <input type="text" class="input-box" id="input-code" placeholder="输入5201314">
+            <button class="submit-btn" id="submit-btn">一键领取!</button>
+        </div>
+    </div>
+    
+    <!-- Toast弹窗 -->
+    <div class="toast-overlay" id="toast-overlay">
+        <div class="toast-box">
+            <div class="toast-title">520专属礼物</div>
+            <div class="toast-message">你连这个都不愿意吗</div>
+            <img src="daku.png" 
+                 alt="大哭" class="banana-img">
+            <button class="toast-btn" id="toast-close-btn">一键领取!</button>
+        </div>
+    </div>
+    
+    <!-- 错误提示 -->
+    <div class="error-toast" id="error-toast">
+        <div class="error-icon">!</div>
+        <div class="error-text">输入"5201314"，否则无法领取~</div>
+    </div>
+    
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+    
+    <!-- 礼物列表页 -->
+    <div id="gift-page" class="page">
+        <div class="gift-header">
+            <button class="back-btn" id="back-btn">←</button>
+            <span class="header-title">送给你的专属520礼物</span>
+            <button class="cart-btn">🛒</button>
+        </div>
+        <div class="gift-subtitle">想要的记得加入购物车哦</div>
+        <div class="gift-list">
+            <div class="gift-item">
+                <img loading="lazy" src="huashu.jpg" 
+                     alt="花束" class="gift-img">
+                <div class="gift-info">
+                    <div class="gift-name">[520-用一朵花来说我爱你]...</div>
+                    <div class="gift-tags">
+                        <span class="tag">口欲浪漫</span>
+                        <span class="tag">爱意永存</span>
+                        <span class="tag price">¥5.2起</span>
+                    </div>
+                    <div class="gift-bottom">
+                        <span class="friend-count">99+人送过</span>
+                        <button class="select-btn" onclick="toggleSelect(this)">选这个</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gift-item">
+                <img loading="lazy" src="huangjin.jpg" 
+                     alt="黄金" class="gift-img">
+                <div class="gift-info">
+                    <div class="gift-name">中国黄金520限定足金999金玫瑰，爱意永不凋</div>
+                    <div class="gift-tags">
+                        <span class="tag">情侣贺卡</span>
+                        <span class="tag">朋友送过</span>
+                        <span class="tag price">¥131.4</span>
+                    </div>
+                    <div class="gift-bottom">
+                        <span class="friend-count">朋友送过</span>
+                        <button class="select-btn" onclick="toggleSelect(this)">选这个</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gift-item">
+                <img loading="lazy" src="huojimian.jpg" 
+                     alt="火鸡面" class="gift-img">
+                <div class="gift-info">
+                    <div class="gift-name">三养甜辣口感经典原味火鸡面</div>
+                    <div class="gift-tags">
+                        <span class="tag">辣的过瘾</span>
+                        <span class="tag">幸福冒泡</span>
+                        <span class="tag price">¥24.9起</span>
+                    </div>
+                    <div class="gift-bottom">
+                        <span class="friend-count">官方正品</span>
+                        <button class="select-btn" onclick="toggleSelect(this)">选这个</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gift-item">
+                <img loading="lazy" src="nashatasha.jpg" 
+                     alt="娜塔莎" class="gift-img">
+                <div class="gift-info">
+                    <div class="gift-name">椰塔莎小黑人格解压捏捏乐</div>
+                    <div class="gift-tags">
+                        <span class="tag">丑萌治愈</span>
+                        <span class="tag">专属陪伴</span>
+                        <span class="tag price">¥0.9起</span>
+                    </div>
+                    <div class="gift-bottom">
+                        <span class="friend-count">39个朋友送过</span>
+                        <button class="select-btn" onclick="toggleSelect(this)">选这个</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gift-item">
+                <img loading="lazy" src="jianpan.jpg" 
+                     alt="键盘" class="gift-img">
+                <div class="gift-info">
+                    <div class="gift-name">男士机械键盘</div>
+                    <div class="gift-tags">
+                        <span class="tag">指尖热爱</span>
+                        <span class="tag">奔赴山海</span>
+                        <span class="tag price">¥89起</span>
+                    </div>
+                    <div class="gift-bottom">
+                        <span class="friend-count">双11爆款</span>
+                        <button class="select-btn" onclick="toggleSelect(this)">选这个</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gift-item">
+                <img loading="lazy" src="xiangxun.jpg" 
+                     alt="香薰" class="gift-img">
+                <div class="gift-info">
+                    <div class="gift-name">氛围感香薰蜡烛</div>
+                    <div class="gift-tags">
+                        <span class="tag">晚风温柔</span>
+                        <span class="tag">爱意缠绵</span>
+                        <span class="tag price">¥32.9</span>
+                    </div>
+                    <div class="gift-bottom">
+                        <span class="friend-count">助眠治愈</span>
+                        <button class="select-btn" onclick="toggleSelect(this)">选这个</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gift-item">
+                <img loading="lazy" src="dahuoji.jpg" 
+                     alt="打火机" class="gift-img">
+                <div class="gift-info">
+                    <div class="gift-name">男士潮牌打火机</div>
+                    <div class="gift-tags">
+                        <span class="tag">烟火告白</span>
+                        <span class="tag">酷感心动</span>
+                        <span class="tag price">¥39.8</span>
+                    </div>
+                    <div class="gift-bottom">
+                        <span class="friend-count">朋友送过</span>
+                        <button class="select-btn" onclick="toggleSelect(this)">选这个</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="gift-item">
+                <img loading="lazy" src="naitang.jpg" 
+                     alt="奶糖" class="gift-img">
+                <div class="gift-info">
+                    <div class="gift-name">网红奶糖礼盒</div>
+                    <div class="gift-tags">
+                        <span class="tag">甜蜜暴击</span>
+                        <span class="tag">满心欢喜</span>
+                        <span class="tag price">¥25.6</span>
+                    </div>
+                    <div class="gift-bottom">
+                        <span class="friend-count">甜蜜礼物</span>
+                        <button class="select-btn" onclick="toggleSelect(this)">选这个</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 购物车底部栏 -->
+        <div class="cart-bar" id="cart-bar">
+            <div class="cart-icon">🛒<span class="cart-badge" id="cart-badge">0</span></div>
+            <div class="cart-text">礼物不多，都是我的心意哦</div>
+            <button class="cart-submit-btn" id="cart-submit-btn">我选好了</button>
+        </div>
+    </div>
+    
+    <!-- 地址填写页 -->
+    <div id="address-page" class="page">
+        <div class="address-content">
+            <div class="address-title">填写你的收货地址哦</div>
+            <textarea class="address-input" id="address-input" placeholder="请输入详细收货地址..."></textarea>
+            <div class="address-hint">礼物会在今天送达至您的收货地址！</div>
+            <div class="address-note">都是我的心意，所以全部我买单哦</div>
+            <img src="songhua.png" alt="送花" class="address-img">
+            <button class="address-submit-btn" id="address-submit-btn">领取我的礼物</button>
+        </div>
+    </div>
+    
+    <!-- 小猫页面 -->
+    <div id="cat-page" class="page">
+        <div class="cat-title">啊哦，你的礼物被小猫咪咪拿走了呢</div>
+        <div class="cat-subtitle">月半猫变成了你的520专属礼物</div>
+        <img src="520peini.jpg" alt="520陪你" class="cat-img">
+        <div class="cat-bottom-text">给作者转0.52，作者帮你抢回来</div>
+        <button class="cat-pay-btn" id="cat-pay-btn">转账抢礼物</button>
+    </div>
+    
+    <!-- 诈骗提示页面 -->
+    <div id="scam-page" class="page">
+        <div class="scam-title">你又被骗了</div>
+        <img src="chaoxiao.png" alt="嘲笑" class="scam-img">
+        <div class="scam-text">请下载，国家反诈中心APP</div>
+    </div>
+    
+    <script>
+        // 获取元素
+        const homePage = document.getElementById('home-page');
+        const giftPage = document.getElementById('gift-page');
+        const addressPage = document.getElementById('address-page');
+        const catPage = document.getElementById('cat-page');
+        const toastOverlay = document.getElementById('toast-overlay');
+        const errorToast = document.getElementById('error-toast');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const inputCode = document.getElementById('input-code');
+        const submitBtn = document.getElementById('submit-btn');
+        const closeBtn = document.getElementById('close-btn');
+        const toastCloseBtn = document.getElementById('toast-close-btn');
+        const backBtn = document.getElementById('back-btn');
+        const cartBadge = document.getElementById('cart-badge');
+        const cartSubmitBtn = document.getElementById('cart-submit-btn');
+        const addressSubmitBtn = document.getElementById('address-submit-btn');
+        const catPayBtn = document.getElementById('cat-pay-btn');
+        const scamPage = document.getElementById('scam-page');
+        
+        let selectedCount = 0;
+        
+        // 点击关闭按钮弹出Toast
+        closeBtn.addEventListener('click', () => {
+            toastOverlay.classList.add('active');
+        });
+        
+        // 关闭Toast，返回首页
+        toastCloseBtn.addEventListener('click', () => {
+            toastOverlay.classList.remove('active');
+        });
+        
+        // 提交按钮点击
+        submitBtn.addEventListener('click', () => {
+            const code = inputCode.value.trim();
+            
+            if (code === '5201314') {
+                // 显示加载动画并跳转
+                loadingOverlay.classList.add('active');
+                setTimeout(() => {
+                    homePage.classList.remove('active');
+                    giftPage.classList.add('active');
+                    loadingOverlay.classList.remove('active');
+                }, 300);
+            } else {
+                // 输入错误，显示提示
+                errorToast.classList.add('active');
+                setTimeout(() => {
+                    errorToast.classList.remove('active');
+                }, 2000);
+            }
+        });
+        
+        // 返回首页
+        backBtn.addEventListener('click', () => {
+            giftPage.classList.remove('active');
+            homePage.classList.add('active');
+            inputCode.value = '';
+        });
+        
+        // 切换选择状态并更新购物车数量
+        function toggleSelect(btn) {
+            btn.classList.toggle('selected');
+            if (btn.classList.contains('selected')) {
+                selectedCount++;
+                btn.textContent = '已选择';
+            } else {
+                selectedCount--;
+                btn.textContent = '选这个';
+            }
+            cartBadge.textContent = selectedCount;
+        }
+        
+        // 点击"我选好了"按钮
+        cartSubmitBtn.addEventListener('click', () => {
+            if (selectedCount > 0) {
+                giftPage.classList.remove('active');
+                addressPage.classList.add('active');
+            }
+        });
+        
+        // 点击"领取我的礼物"按钮，跳转到小猫页面
+        addressSubmitBtn.addEventListener('click', () => {
+            addressPage.classList.remove('active');
+            catPage.classList.add('active');
+        });
+        
+        // 点击"转账抢礼物"按钮，跳转到被骗页面
+        catPayBtn.addEventListener('click', () => {
+            catPage.classList.remove('active');
+            scamPage.classList.add('active');
+        });
+    </script>
+</body>
+</html>
